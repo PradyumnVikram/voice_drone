@@ -1,26 +1,30 @@
 import speech_recognition as sr
-
+import numpy as np
 r = sr.Recognizer()
 
-directions = {"forward":1, "backward":2, "left":3, "right":4}
+drone_coordinate = np.array([0,0,3])
 
-with sr.Microphone() as source:
-    print("Adjusting for ambient noise...")
-    r.adjust_for_ambient_noise(source, duration=1)
-    
-    print("Listening... Speak now!")
-    audio = r.listen(source)
-    
-    print("Processing...")
+directions = {"forward":np.array([1,0,0]), "backward":np.array([-1,0,0]), "left":np.array([0,1,0]), "right":np.array([0,-1,0])}
 
-try:
-    text = r.recognize_google(audio)
-    for direction in directions.keys():
-        if direction in text.lower():
-            print(directions[direction])
-    
-except sr.UnknownValueError:
-    print("Sorry, could not understand the audio")
-    
-except sr.RequestError as e:
-    print(f"Could not request results from Google Speech Recognition service; {e}")
+while True:
+    with sr.Microphone() as source:
+        print("Adjusting for ambient noise...")
+        r.adjust_for_ambient_noise(source, duration=1)
+        
+        print("Listening... Speak now!")
+        audio = r.listen(source)
+        
+        print("Processing...")
+
+    try:
+        text = r.recognize_google(audio)
+        for direction in directions.keys():
+            if direction in text.lower():
+                drone_coordinate += directions[direction]
+        print(drone_coordinate)
+        
+    except sr.UnknownValueError:
+        print("Sorry, could not understand the audio")
+        
+    except sr.RequestError as e:
+        print(f"Could not request results from Google Speech Recognition service; {e}")
